@@ -87,6 +87,11 @@ const socialLinks = [
   { label: "Instagram", href: "https://www.instagram.com/zerooneit.inc/" },
 ];
 
+const registrationBadges = [
+  { label: "SEC Registered", logo: secLogo, alt: "SEC logo" },
+  { label: "BIR Registered", logo: birLogo, alt: "BIR logo" },
+];
+
 export default function App() {
   return (
     <div className="page-shell">
@@ -168,14 +173,12 @@ export default function App() {
               for teams that need reliable technology built around real operations.
             </p>
             <div className="footer-trustmarks" aria-label="Registration badges">
-              <span className="footer-trustmark">
-                <img className="footer-trustmark-logo" src={secLogo} alt="SEC logo" />
-                Registered
-              </span>
-              <span className="footer-trustmark">
-                <img className="footer-trustmark-logo" src={birLogo} alt="BIR logo" />
-                Registered
-              </span>
+              {registrationBadges.map((badge) => (
+                <span className="footer-trustmark" key={badge.label}>
+                  <img className="footer-trustmark-logo" src={badge.logo} alt={badge.alt} />
+                  <span className="footer-trustmark-text">{badge.label}</span>
+                </span>
+              ))}
             </div>
           </div>
 
