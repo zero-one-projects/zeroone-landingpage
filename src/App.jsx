@@ -2,9 +2,9 @@ import logo2 from "./assets/logo2.png";
 import birLogo from "./assets/BIR.png";
 import secLogo from "./assets/sec.jpg";
 
-const companyProfileAboutUrl = "http://localhost:3000/#about-us";
-const companyProfileServicesUrl = "http://localhost:3000/#services";
-const companyProfileHomeUrl = "http://localhost:3000/";
+const companyProfileAboutUrl = "/#about-us";
+const companyProfileServicesUrl = "/#services";
+const companyProfileHomeUrl = "/";
 
 const binaryPatterns = [
   "0101011010010110",
