@@ -125,7 +125,7 @@ export default function App() {
           <div className="hero-header">
             <div className="hero-heading-block">
               <p className="hero-eyebrow">ZeroOne | Information Technology Inc.</p>
-              <h1 className="hero-title">Welcome.</h1>
+              <h1 className="hero-title">Welcome</h1>
               <p className="hero-lead">
                 We build modern websites, internal systems, and custom software that
                 fit the way your business actually operates.
