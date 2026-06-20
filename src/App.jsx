@@ -73,20 +73,20 @@ const heroCards = [
   },
 ];
 
-const footerLinks = [
-  { label: "Services", href: companyProfileServicesUrl },
-  { label: "Solutions", href: companyProfileServicesUrl },
-  { label: "About", href: companyProfileAboutUrl },
-  { label: "Contact", href: "mailto:hello@zeroone-apps.com" },
+const footerCapabilities = [
+  { label: "Custom Software", href: companyProfileServicesUrl },
+  { label: "AI Automation", href: companyProfileServicesUrl },
+  { label: "Internal Systems", href: companyProfileServicesUrl },
+  { label: "Web Platforms", href: companyProfileServicesUrl },
+  { label: "Mobile Apps", href: companyProfileServicesUrl },
 ];
 
-const socialLinks = [
+const footerLinks = [
+  { label: "Home", href: companyProfileHomeUrl },
+  { label: "About", href: companyProfileAboutUrl },
+  { label: "Services", href: companyProfileServicesUrl },
+  { label: "Contact", href: "#contact" },
   { label: "Facebook", href: "https://www.facebook.com/zeroone.it.inc" },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/company/112718341/admin/dashboard/",
-  },
-  { label: "Instagram", href: "https://www.instagram.com/zerooneit.inc/" },
 ];
 
 const registrationBadges = [
@@ -266,8 +266,8 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <section className="contact-section" id="contact">
+      <section className="contact-shell">
+        <div className="contact-section" id="contact">
           <div className="contact-grid">
             <div className="contact-copy">
               <div className="contact-chip">
@@ -278,7 +278,7 @@ export default function App() {
               </div>
 
               <p className="footer-kicker">ZeroOne IT Inc.</p>
-              <h2 className="contact-title">Get in touch</h2>
+              <h2 className="contact-title">Contact Us</h2>
               <p className="contact-copy-text">
                 Have questions or ready to transform your business with AI automation,
                 custom software, or internal systems?
@@ -302,15 +302,6 @@ export default function App() {
                       ↗
                     </span>
                   </a>
-                ))}
-              </div>
-
-              <div className="footer-trustmarks" aria-label="Registration badges">
-                {registrationBadges.map((badge) => (
-                  <span className="footer-trustmark" key={badge.label}>
-                    <img className="footer-trustmark-logo" src={badge.logo} alt={badge.alt} />
-                    <span className="footer-trustmark-text">{badge.label}</span>
-                  </span>
                 ))}
               </div>
             </div>
@@ -376,27 +367,79 @@ export default function App() {
               </form>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <div className="footer-bottom">
-          <nav className="footer-nav" aria-label="Footer">
-            {footerLinks.map((item) => (
-              <a key={item.label} href={item.href}>
-                {item.label}
+      <footer className="site-footer">
+        <div className="footer-inner">
+          <div className="footer-main">
+            <div className="footer-brand">
+              <a className="footer-wordmark" href={companyProfileHomeUrl} aria-label="ZeroOne home">
+                <span className="footer-wordmark-primary">Zero One IT Inc.</span>
               </a>
+              <p className="footer-description">
+                Scaling operations requires software that works for operators. ZeroOne
+                builds precision IT solutions for modern businesses in the Philippines.
+              </p>
+              <div className="footer-direct">
+                <p className="footer-label">Direct Contact</p>
+                <a className="footer-direct-link" href="mailto:contact@zeroone-apps.com">
+                  contact@zeroone-apps.com
+                </a>
+                <a className="footer-direct-link" href="tel:+639190797137">
+                  +63 919 079 7137
+                </a>
+              </div>
+            </div>
+
+            <div className="footer-column">
+              <p className="footer-label">Capabilities</p>
+              <nav className="footer-list" aria-label="Capabilities">
+                {footerCapabilities.map((item) => (
+                  <a key={item.label} href={item.href}>
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+
+            <div className="footer-column">
+              <p className="footer-label">Navigation</p>
+              <nav className="footer-list" aria-label="Footer">
+                {footerLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          <div className="footer-badges" aria-label="Registration badges">
+            {registrationBadges.map((badge) => (
+              <span className="footer-badge" key={badge.label}>
+                <img className="footer-badge-logo" src={badge.logo} alt={badge.alt} />
+                <span>{badge.label}</span>
+              </span>
             ))}
-          </nav>
-          <nav className="footer-social-nav" aria-label="Social links">
-            {socialLinks.map((item) => (
-              <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
-                {item.label}
-              </a>
-            ))}
-          </nav>
-          <p className="footer-copyright">© 2026 ZeroOne IT Inc. All rights reserved.</p>
-          <a className="footer-cta" href="mailto:hello@zeroone-apps.com">
-            Start a Project
-          </a>
+          </div>
+
+          <div className="footer-bottom">
+            <p className="footer-copyright">© 2026 ZEROONE IT INC. ALL RIGHTS RESERVED.</p>
+            <p className="footer-country">
+              SEC REGISTERED
+              <span className="footer-country-separator">•</span>
+              BIR REGISTERED
+            </p>
+            <a className="footer-cta" href="mailto:hello@zeroone-apps.com">
+              Start a Project
+            </a>
+          </div>
         </div>
       </footer>
     </div>

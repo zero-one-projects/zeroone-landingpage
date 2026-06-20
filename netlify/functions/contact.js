@@ -1,5 +1,13 @@
 const GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
 
+class ContactFunctionError extends Error {
+  constructor(message, statusCode = 500) {
+    super(message);
+    this.name = "ContactFunctionError";
+    this.statusCode = statusCode;
+  }
+}
+
 function jsonResponse(statusCode, body) {
   return {
     statusCode,
@@ -8,6 +16,15 @@ function jsonResponse(statusCode, body) {
     },
     body: JSON.stringify(body),
   };
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 function validatePayload(payload) {
@@ -34,7 +51,10 @@ async function getAccessToken() {
   const clientSecret = process.env.MS_CLIENT_SECRET;
 
   if (!tenantId || !clientId || !clientSecret) {
-    throw new Error("Microsoft Graph environment variables are missing.");
+    throw new ContactFunctionError(
+      "Server configuration is incomplete. Add the Microsoft Graph environment variables in Netlify.",
+      500,
+    );
   }
 
   const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
@@ -55,7 +75,18 @@ async function getAccessToken() {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Unable to get Microsoft Graph token: ${errorText}`);
+
+    if (response.status === 401 || response.status === 400) {
+      throw new ContactFunctionError(
+        "Microsoft Graph authentication failed. Check the tenant ID, client ID, and client secret in Netlify.",
+        500,
+      );
+    }
+
+    throw new ContactFunctionError(
+      `Unable to get Microsoft Graph token: ${errorText}`,
+      500,
+    );
   }
 
   const data = await response.json();
@@ -63,6 +94,8 @@ async function getAccessToken() {
 }
 
 async function sendMail({ accessToken, senderEmail, name, email, message }) {
+  const recipientEmail = process.env.MS_RECIPIENT_EMAIL || "contact@zeroone-apps.com";
+
   const response = await fetch(
     `${GRAPH_BASE_URL}/users/${encodeURIComponent(senderEmail)}/sendMail`,
     {
@@ -78,16 +111,16 @@ async function sendMail({ accessToken, senderEmail, name, email, message }) {
             contentType: "HTML",
             content: `
               <p>You received a new message from the ZeroOne website.</p>
-              <p><strong>Name:</strong> ${name}</p>
-              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+              <p><strong>Email:</strong> ${escapeHtml(email)}</p>
               <p><strong>Message:</strong></p>
-              <p>${message.replace(/\n/g, "<br />")}</p>
+              <p>${escapeHtml(message).replace(/\n/g, "<br />")}</p>
             `,
           },
           toRecipients: [
             {
               emailAddress: {
-                address: senderEmail,
+                address: recipientEmail,
               },
             },
           ],
@@ -106,7 +139,40 @@ async function sendMail({ accessToken, senderEmail, name, email, message }) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Unable to send email through Microsoft Graph: ${errorText}`);
+    let graphErrorCode = "";
+
+    try {
+      const parsed = JSON.parse(errorText);
+      graphErrorCode = parsed?.error?.code || "";
+    } catch {
+      graphErrorCode = "";
+    }
+
+    if (response.status === 403) {
+      throw new ContactFunctionError(
+        "Microsoft Graph permission denied. Confirm Mail.Send application permission is added and admin consent is granted.",
+        500,
+      );
+    }
+
+    if (response.status === 404) {
+      throw new ContactFunctionError(
+        `The mailbox ${senderEmail} could not be found. Confirm MS_SENDER_EMAIL matches a real Exchange mailbox.`,
+        500,
+      );
+    }
+
+    if (response.status === 400 && graphErrorCode === "ErrorInvalidUser") {
+      throw new ContactFunctionError(
+        `The mailbox ${senderEmail} is not available for sendMail. Confirm it exists in Exchange Online.`,
+        500,
+      );
+    }
+
+    throw new ContactFunctionError(
+      `Unable to send email through Microsoft Graph: ${errorText}`,
+      500,
+    );
   }
 }
 
@@ -127,9 +193,16 @@ export async function handler(event) {
   }
 
   try {
-    const senderEmail = process.env.MS_SENDER_EMAIL || "contact@zeroone-apps.com";
+    const senderEmail = process.env.MS_SENDER_EMAIL;
     const payload = JSON.parse(event.body || "{}");
     const validated = validatePayload(payload);
+
+    if (!senderEmail) {
+      return jsonResponse(500, {
+        message:
+          "MS_SENDER_EMAIL is missing. Set it in Netlify to a real Exchange mailbox that can send mail through Microsoft Graph.",
+      });
+    }
 
     if ("error" in validated) {
       return jsonResponse(400, {
@@ -152,7 +225,9 @@ export async function handler(event) {
 
     return jsonResponse(500, {
       message:
-        "We couldn't send your message right now. Please email us directly at contact@zeroone-apps.com.",
+        error instanceof ContactFunctionError
+          ? error.message
+          : "We couldn't send your message right now. Please email us directly at contact@zeroone-apps.com.",
     });
   }
 }
