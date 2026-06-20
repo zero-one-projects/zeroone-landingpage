@@ -1,6 +1,8 @@
+import { useState } from "react";
 import logo2 from "./assets/logo2.png";
 import birLogo from "./assets/BIR.png";
 import secLogo from "./assets/sec.jpg";
+import zeroOneLogo from "./assets/zeroone-logo.png";
 
 const companyProfileAboutUrl = "/#about-us";
 const companyProfileServicesUrl = "/#services";
@@ -92,7 +94,108 @@ const registrationBadges = [
   { label: "BIR Registered", logo: birLogo, alt: "BIR logo" },
 ];
 
+const contactMethods = [
+  {
+    title: "Email us",
+    value: "contact@zeroone-apps.com",
+    href: "mailto:contact@zeroone-apps.com",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />
+        <path d="m5.5 7 6.5 5 6.5-5" />
+      </svg>
+    ),
+  },
+  {
+    title: "Call us",
+    value: "+63 919 079 7137",
+    href: "tel:+639190797137",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.2 4.8c.5-.5 1.4-.5 1.9 0l1.7 1.7c.5.5.5 1.2.1 1.8l-1.4 1.8a13.6 13.6 0 0 0 4.4 4.4l1.8-1.4c.5-.4 1.3-.4 1.8.1l1.7 1.7c.5.5.5 1.4 0 1.9l-1.2 1.2c-.8.8-2 1.1-3.1.7A18.3 18.3 0 0 1 4.5 8.9c-.4-1.1-.1-2.3.7-3.1z" />
+        <path d="M14.5 5.5a5 5 0 0 1 4 4" />
+        <path d="M14.5 2.5a8 8 0 0 1 7 7" />
+      </svg>
+    ),
+  },
+  {
+    title: "Our location",
+    value: "Philippines",
+    href: "https://maps.google.com/?q=Philippines",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s6-5.7 6-11a6 6 0 1 0-12 0c0 5.3 6 11 6 11Z" />
+        <path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      </svg>
+    ),
+  },
+];
+
 export default function App() {
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [submitState, setSubmitState] = useState({
+    status: "idle",
+    message: "",
+  });
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setFormState((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setSubmitState({
+      status: "submitting",
+      message: "Sending your message...",
+    });
+
+    try {
+      const response = await fetch("/.netlify/functions/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formState.name,
+          email: formState.email,
+          message: formState.message,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(errorPayload?.message || "Unable to submit form");
+      }
+
+      setSubmitState({
+        status: "success",
+        message: "Thanks. Your message has been sent.",
+      });
+      setFormState({
+        name: "",
+        email: "",
+        message: "",
+      });
+    } catch (error) {
+      setSubmitState({
+        status: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please email us directly at contact@zeroone-apps.com.",
+      });
+    }
+  }
+
   return (
     <div className="page-shell">
       <div className="ambient ambient-left" />
@@ -164,49 +267,116 @@ export default function App() {
       </main>
 
       <footer className="site-footer">
-        <div className="footer-grid">
-          <div className="footer-intro">
-            <p className="footer-kicker">ZeroOne IT Inc.</p>
-            <h2 className="footer-title">Build software that fits the way your business works.</h2>
-            <p className="footer-copy">
-              We create modern websites, internal systems, and custom digital tools
-              for teams that need reliable technology built around real operations.
-            </p>
-            <div className="footer-trustmarks" aria-label="Registration badges">
-              {registrationBadges.map((badge) => (
-                <span className="footer-trustmark" key={badge.label}>
-                  <img className="footer-trustmark-logo" src={badge.logo} alt={badge.alt} />
-                  <span className="footer-trustmark-text">{badge.label}</span>
+        <section className="contact-section" id="contact">
+          <div className="contact-grid">
+            <div className="contact-copy">
+              <div className="contact-chip">
+                <span className="contact-chip-icon">
+                  <img src={zeroOneLogo} alt="ZeroOne logo" className="contact-chip-logo" />
                 </span>
-              ))}
-            </div>
-          </div>
+                <span>Start a Project</span>
+              </div>
 
-          <div className="footer-panel">
-            <div className="footer-panel-section">
-              <p className="footer-label">Email</p>
-              <a className="footer-value" href="mailto:contact@zeroone-apps.com">
-                contact@zeroone-apps.com
-              </a>
-            </div>
-            <div className="footer-panel-section">
-              <p className="footer-label">Phone</p>
-              <a className="footer-value" href="tel:+639190797137">
-                +63 919 079 7137
-              </a>
-            </div>
-            <div className="footer-panel-section">
-              <p className="footer-label">Based In</p>
-              <p className="footer-value">Philippines</p>
-            </div>
-            <div className="footer-panel-section">
-              <p className="footer-label">What We Build</p>
-              <p className="footer-value">
-                Custom software, SaaS platforms, websites, and workflow systems
+              <p className="footer-kicker">ZeroOne IT Inc.</p>
+              <h2 className="contact-title">Get in touch</h2>
+              <p className="contact-copy-text">
+                Have questions or ready to transform your business with AI automation,
+                custom software, or internal systems?
               </p>
+
+              <div className="contact-card-list">
+                {contactMethods.map((item) => (
+                  <a
+                    className="contact-card"
+                    key={item.title}
+                    href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                  >
+                    <span className="contact-card-icon">{item.icon}</span>
+                    <span className="contact-card-body">
+                      <span className="contact-card-title">{item.title}</span>
+                      <span className="contact-card-value">{item.value}</span>
+                    </span>
+                    <span className="contact-card-arrow" aria-hidden="true">
+                      ↗
+                    </span>
+                  </a>
+                ))}
+              </div>
+
+              <div className="footer-trustmarks" aria-label="Registration badges">
+                {registrationBadges.map((badge) => (
+                  <span className="footer-trustmark" key={badge.label}>
+                    <img className="footer-trustmark-logo" src={badge.logo} alt={badge.alt} />
+                    <span className="footer-trustmark-text">{badge.label}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="contact-form-column">
+              <div className="contact-form-copy">
+                <p className="contact-form-heading">
+                  Build software that fits the way your business works.
+                </p>
+              </div>
+
+              <form className="contact-form-panel" onSubmit={handleSubmit}>
+                <label className="contact-field">
+                  <span className="sr-only">Name</span>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    value={formState.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+                <label className="contact-field">
+                  <span className="sr-only">Email</span>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={formState.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+                <label className="contact-field contact-field-textarea">
+                  <span className="sr-only">Message</span>
+                  <textarea
+                    name="message"
+                    placeholder="Message"
+                    rows="8"
+                    value={formState.message}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+                <button
+                  className="contact-submit"
+                  type="submit"
+                  disabled={submitState.status === "submitting"}
+                >
+                  {submitState.status === "submitting" ? "Sending..." : "Submit"}
+                </button>
+                <p
+                  className={
+                    submitState.status === "error"
+                      ? "contact-submit-message is-error"
+                      : "contact-submit-message"
+                  }
+                  role="status"
+                >
+                  {submitState.message}
+                </p>
+              </form>
             </div>
           </div>
-        </div>
+        </section>
 
         <div className="footer-bottom">
           <nav className="footer-nav" aria-label="Footer">
